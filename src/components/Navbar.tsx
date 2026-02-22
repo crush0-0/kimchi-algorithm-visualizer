@@ -32,10 +32,11 @@ export function Navbar() {
   return (
     <nav className="h-14 border-b border-surface0/50 flex items-center justify-between px-6 bg-base">
       <div className="flex items-center gap-3">
-        {/* Simple geometric icon */}
-        <div className="w-6 h-6 rounded-md bg-mauve/20 border border-mauve/30 flex items-center justify-center">
-          <div className="w-3 h-3 rounded-sm bg-mauve" />
-        </div>
+        <img
+          src="/vite.svg"
+          alt="Kimchi Logo"
+          className="h-8 w-8"
+        />
         <h1 className="text-xl font-bold tracking-tight text-text">Kimchi</h1>
       </div>
       
