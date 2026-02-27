@@ -1,24 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import App from "./pages/App";
 import { Landing } from "./pages/Landing";
-import { App } from "./pages/App";
-import { Navbar } from "./components/Navbar";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 export function Root() {
-  const [started, setStarted] = useState(false);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-base flex flex-col font-sans">
-      {started && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <Navbar />
-        </div>
-      )}
-      
-      {!started ? (
-        <Landing onStart={() => setStarted(true)} />
-      ) : (
-        <App />
-      )}
-    </div>
+    <ThemeProvider>
+      {currentPath === "/app" ? <App /> : <Landing />}
+    </ThemeProvider>
   );
 }

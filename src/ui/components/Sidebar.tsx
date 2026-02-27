@@ -1,12 +1,14 @@
 import { useState } from "react";
-import type { AlgorithmDefinition } from "../types/algorithm";
-import { Code, FileText, Info } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import type { Algorithm } from "../../types/algorithm";
+import { FileText, Info } from "lucide-react";
 
 interface SidebarProps {
-  algorithm: AlgorithmDefinition | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  algorithm: Algorithm<any, any> | null;
 }
 
-type TabType = "pseudocode" | "cpp" | "ts" | "explanation";
+type TabType = "pseudocode" | "explanation";
 
 export function Sidebar({ algorithm }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<TabType>("pseudocode");
@@ -24,8 +26,6 @@ export function Sidebar({ algorithm }: SidebarProps) {
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
     { id: "pseudocode", label: "Pseudocode", icon: <FileText size={16} /> },
-    { id: "cpp", label: "C++", icon: <Code size={16} /> },
-    { id: "ts", label: "TypeScript", icon: <Code size={16} /> },
     { id: "explanation", label: "Explanation", icon: <Info size={16} /> },
   ];
 
@@ -34,7 +34,8 @@ export function Sidebar({ algorithm }: SidebarProps) {
       
       {/* Title & Meta Info */}
       <div className="p-4 border-b border-surface1">
-        <h2 className="text-xl font-bold text-text mb-2">{algorithm.name}</h2>
+        <h2 className="text-xl font-bold text-text mb-1">{algorithm.name}</h2>
+        <p className="text-sm text-subtext1 mb-3 line-clamp-2">{algorithm.description}</p>
         <div className="flex gap-4 text-xs font-mono">
           <div className="flex items-center gap-1.5 bg-crust px-2 py-1 rounded text-teal">
             <span className="text-subtext0">Time:</span> {algorithm.complexity.time}
@@ -46,7 +47,7 @@ export function Sidebar({ algorithm }: SidebarProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-surface1 overflow-x-auto overflow-y-hidden custom-scrollbar">
+      <div className="flex border-b border-surface1 overflow-x-auto overflow-y-hidden custom-scrollbar shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -68,46 +69,38 @@ export function Sidebar({ algorithm }: SidebarProps) {
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {activeTab === "pseudocode" && (
           <pre className="text-sm font-mono text-text leading-relaxed whitespace-pre-wrap">
-            {algorithm.pseudocode.join('\n')}
-          </pre>
-        )}
-        
-        {activeTab === "cpp" && (
-          <pre className="text-sm font-mono text-text bg-crust p-4 rounded-xl overflow-x-auto custom-scrollbar leading-relaxed">
-            {algorithm.cppImplementation || "No code provided"}
-          </pre>
-        )}
-        
-        {activeTab === "ts" && (
-          <pre className="text-sm font-mono text-text bg-crust p-4 rounded-xl overflow-x-auto custom-scrollbar leading-relaxed">
-            {algorithm.tsImplementation || "No code provided"}
+            {algorithm.pseudocode.join('\\n')}
           </pre>
         )}
         
         {activeTab === "explanation" && (
           <div className="prose prose-invert max-w-none">
             <div className="text-subtext1 leading-relaxed whitespace-pre-wrap text-sm mb-6">
-              {algorithm.explanation.join('\n')}
+              {algorithm.explanation.join('\\n')}
             </div>
             
-            <h3 className="text-text font-bold text-sm uppercase tracking-wider mb-3">
-              Resources
-            </h3>
-            <ul className="space-y-2">
-              {algorithm.resources.map((res, i) => (
-                <li key={i}>
-                  <a
-                    href={res.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sapphire hover:text-mauve transition-colors text-sm flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-sapphire group-hover:bg-mauve transition-colors" />
-                    {res.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {(algorithm.resources?.length ?? 0) > 0 && (
+              <>
+                <h3 className="text-text font-bold text-sm uppercase tracking-wider mb-3">
+                  Resources
+                </h3>
+                <ul className="space-y-2">
+                  {algorithm.resources.map((res: {url: string; label: string}, i: number) => (
+                    <li key={i}>
+                      <a
+                        href={res.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sapphire hover:text-mauve transition-colors text-sm flex items-center gap-2 group"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-sapphire group-hover:bg-mauve transition-colors" />
+                        {res.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -1,19 +1,21 @@
-import type { AlgorithmDefinition } from "../../types/algorithm";
-import type { Step } from "../../types/steps";
+import type { Algorithm } from "../../types/algorithm";
+import type { ArrayStep } from "../../types/steps";
 
-export const insertionSort: AlgorithmDefinition = {
+export const insertionSort: Algorithm<number[], ArrayStep> = {
   id: "insertion-sort",
   name: "Insertion Sort",
+  category: "sorting",
+  description: "A simple sorting algorithm that builds the final sorted array (or list) one item at a time by comparisons.",
   complexity: {
     time: "O(n²)",
     space: "O(1)",
   },
-  generateSteps: (array: number[]): Step[] => {
-    const steps: Step[] = [];
+  generateSteps: (array: number[]): ArrayStep[] => {
+    const steps: ArrayStep[] = [];
     const arr = [...array];
     const n = arr.length;
 
-    steps.push({ type: "markSorted", index: 0 }); // First element is trivially sorted
+    steps.push({ type: "mark_sorted", index: 0 }); // First element is trivially sorted
 
     for (let i = 1; i < n; i++) {
       const key = arr[i];
@@ -36,7 +38,7 @@ export const insertionSort: AlgorithmDefinition = {
       arr[j + 1] = key;
       
       // Mark the newly placed element
-      steps.push({ type: "markSorted", index: j + 1 });
+      steps.push({ type: "mark_sorted", index: j + 1 });
     }
 
     return steps;

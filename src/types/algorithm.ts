@@ -1,8 +1,14 @@
-import type { Step } from "./steps";
+export type AlgorithmCategory = 
+  | "sorting"
+  | "searching"
+  | "recursion"
+  | "graph";
 
-export interface AlgorithmDefinition {
+export interface Algorithm<TInput, TStep> {
   id: string;
   name: string;
+  category: AlgorithmCategory;
+  description: string;
   pseudocode: string[];
   cppImplementation: string;
   tsImplementation: string;
@@ -11,6 +17,6 @@ export interface AlgorithmDefinition {
     time: string;
     space: string;
   };
-  generateSteps: (array: number[]) => Step[];
+  generateSteps: (input: TInput) => TStep[];
   resources: { label: string; url: string }[];
 }

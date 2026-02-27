@@ -1,0 +1,26 @@
+src/algorithms/index.ts(1,15): error TS2305: Module '"../types/algorithm"' has no exported member 'AlgorithmDefinition'.
+src/pages/App.tsx(1,20): error TS6133: 'useEffect' is declared but its value is never read.
+src/pages/App.tsx(72,38): error TS2554: Expected 1 arguments, but got 0.
+src/pages/App.tsx(105,25): error TS6133: 's' is declared but its value is never read.
+src/pages/App.tsx(113,26): error TS6133: 'size' is declared but its value is never read.
+src/ui/components/CategorySelector.tsx(1,51): error TS2307: Cannot find module '../../../types/algorithm' or its corresponding type declarations.
+src/ui/components/Sidebar.tsx(3,32): error TS2307: Cannot find module '../../../types/algorithm' or its corresponding type declarations.
+src/ui/components/Sidebar.tsx(102,45): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/ui/components/Sidebar.tsx(102,50): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/visualizers/GraphVisualizer.tsx(1,39): error TS2307: Cannot find module '../../engines/useGraphEngine' or its corresponding type declarations.
+src/visualizers/GraphVisualizer.tsx(2,32): error TS2307: Cannot find module '../../types/graph' or its corresponding type declarations.
+src/visualizers/GraphVisualizer.tsx(12,10): error TS6133: 'dimensions' is declared but its value is never read.
+src/visualizers/GraphVisualizer.tsx(42,27): error TS7006: Parameter 'node' implicitly has an 'any' type.
+src/visualizers/GraphVisualizer.tsx(66,31): error TS7006: Parameter 'edge' implicitly has an 'any' type.
+src/visualizers/GraphVisualizer.tsx(66,37): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/visualizers/GraphVisualizer.tsx(67,50): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/visualizers/GraphVisualizer.tsx(68,48): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/visualizers/GraphVisualizer.tsx(123,31): error TS7006: Parameter 'node' implicitly has an 'any' type.
+src/visualizers/HanoiVisualizer.tsx(1,39): error TS2307: Cannot find module '../../engines/useHanoiEngine' or its corresponding type declarations.
+src/visualizers/HanoiVisualizer.tsx(37,27): error TS7006: Parameter 'rodDisks' implicitly has an 'any' type.
+src/visualizers/HanoiVisualizer.tsx(37,37): error TS7006: Parameter 'rodIdx' implicitly has an 'any' type.
+src/visualizers/HanoiVisualizer.tsx(45,37): error TS7006: Parameter 'disk' implicitly has an 'any' type.
+src/visualizers/HanoiVisualizer.tsx(45,43): error TS6133: 'idx' is declared but its value is never read.
+src/visualizers/HanoiVisualizer.tsx(45,43): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/visualizers/HanoiVisualizer.tsx(74,52): error TS7006: Parameter 'frame' implicitly has an 'any' type.
+src/visualizers/HanoiVisualizer.tsx(74,59): error TS7006: Parameter 'idx' implicitly has an 'any' type.

@@ -1,108 +1,214 @@
 import { useState } from "react";
-import { useVisualizerEngine } from "../hooks/useVisualizerEngine";
-import { algorithms } from "../algorithms";
-import { Controls } from "../components/Controls";
-import { Visualizer } from "../components/Visualizer";
-import { Sidebar } from "../components/Sidebar";
+import { useTheme } from "../contexts/ThemeContext";
+import type { AlgorithmCategory, Algorithm } from "../types/algorithm";
+import { algorithms } from "../algorithms/registry";
+import { romaniaGraph } from "../algorithms/graph/data/romania";
 
-export function VisualizerInstance() {
-  const engine = useVisualizerEngine();
+import { MainLayout } from "../ui/layout/MainLayout";
+import { Sidebar } from "../ui/components/Sidebar";
+import { Controls } from "../ui/components/Controls";
+import { LeftSidebar } from "../ui/components/LeftSidebar";
+
+// Engines
+import { useArrayEngine } from "../engines/useArrayEngine";
+import { useGraphEngine } from "../engines/useGraphEngine";
+import { useHanoiEngine } from "../engines/useHanoiEngine";
+
+// Visualizers
+import { ArrayVisualizer } from "../visualizers/ArrayVisualizer";
+import { GraphVisualizer } from "../visualizers/GraphVisualizer";
+import { HanoiVisualizer } from "../visualizers/HanoiVisualizer";
+
+function AppContent() {
+  const [activeCategory, setActiveCategory] = useState<AlgorithmCategory | "all">("sorting");
+  
+  // Default to first sorting algorithm
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [activeAlg, setActiveAlg] = useState<Algorithm<any, any> | null>(
+      algorithms.find(a => a.category === "sorting") || null
+  );
+
+  // -- Engine Hooks --
+  // We initialize all engines but only drive the active one.
+  const arrayEngine = useArrayEngine(30);
+  const graphEngine = useGraphEngine();
+  const hanoiEngine = useHanoiEngine(3);
+  const { theme, toggleTheme } = useTheme();
+
+  // Handle Algorithm Switch
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSelectAlgorithm = (alg: Algorithm<any, any>) => {
+      // Pause all engines
+      arrayEngine.pause();
+      graphEngine.pause();
+      hanoiEngine.pause();
+      
+      setActiveAlg(alg);
+
+      // Pre-load dummy data or default state based on category to reset views instantly
+      if (alg.category === "sorting" || alg.category === "searching") {
+          arrayEngine.reset();
+      } else if (alg.category === "graph") {
+          graphEngine.reset();
+      } else if (alg.category === "recursion") {
+          hanoiEngine.reset();
+      }
+  };
+
+  // Master Play Wrapper mapping to correct active engine
+  const handlePlay = () => {
+     if (!activeAlg) return;
+     
+     if (activeAlg.category === "sorting" || activeAlg.category === "searching") {
+         if (arrayEngine.isFinished || arrayEngine.visualArray.every(v => v.state === "default" && v.value === 0)) {
+              // Generate steps fresh if needed. Usually arrayEngine.load does this.
+              const arr = arrayEngine.visualArray.map(v => v.value);
+              const steps = activeAlg.generateSteps(arr);
+              arrayEngine.load(steps);
+         }
+         arrayEngine.play({ speed: globalSpeed });
+     } else if (activeAlg.category === "graph") {
+         if (graphEngine.isFinished || !graphEngine.isPlaying) {
+             const steps = activeAlg.generateSteps(romaniaGraph); // Graph algorithms use static dataset internally for now
+             graphEngine.load(steps);
+         }
+         graphEngine.play({ speed: globalSpeed });
+     } else if (activeAlg.category === "recursion") {
+         if (hanoiEngine.isFinished || !hanoiEngine.isPlaying) {
+             const steps = activeAlg.generateSteps(hanoiEngine.numDisks);
+             hanoiEngine.load(steps);
+         }
+         hanoiEngine.play({ speed: globalSpeed });
+     }
+  };
+
+  const handlePause = () => {
+      arrayEngine.pause();
+      graphEngine.pause();
+      hanoiEngine.pause();
+  };
+
+  const handleReset = () => {
+      if (!activeAlg) return;
+      if (activeAlg.category === "sorting" || activeAlg.category === "searching") {
+          arrayEngine.reset();
+      } else if (activeAlg.category === "graph") {
+          graphEngine.reset();
+      } else if (activeAlg.category === "recursion") {
+          hanoiEngine.reset();
+      }
+  };
+
+  // Master Controls Prop Mapping
+  let activeState: "idle" | "running" | "paused" | "completed" = "idle";
+  let activeSpeed = 50;
+  let activeSetSpeed = (_s: number) => {};
+  let optionalSize: number | undefined;
+  let optionalSetSize: ((s: number) => void) | undefined;
+  let optionalMaxSize: number | undefined;
+  let optionalShuffle: (() => void) | undefined;
+
+  if (activeAlg?.category === "sorting" || activeAlg?.category === "searching") {
+      activeState = arrayEngine.playbackState;
+      optionalSize = arrayEngine.visualArray.length;
+      optionalMaxSize = activeAlg?.category === "searching" ? 20 : 100;
+      optionalSetSize = (_size) => {
+         arrayEngine.pause();
+         arrayEngine.generateNewArray(_size);
+      };
+      optionalShuffle = () => arrayEngine.reset();
+      
+      // Speed wrapper for Array Engine doesn't expose speed state directly right now
+      // A proper refactor would put speed state in standard React state, but we'll manage via play options for now.
+  } else if (activeAlg?.category === "graph") {
+      activeState = graphEngine.playbackState;
+  } else if (activeAlg?.category === "recursion") {
+      activeState = hanoiEngine.playbackState;
+      optionalSize = hanoiEngine.numDisks;
+      optionalSetSize = hanoiEngine.setNumDisks;
+      optionalMaxSize = 12;
+  }
+
+  // Local speed state to feed into `opts.speed` on play wrapper
+  const [globalSpeed, setGlobalSpeed] = useState(50);
+  activeSpeed = globalSpeed;
+  activeSetSpeed = (v) => {
+      setGlobalSpeed(v);
+      arrayEngine.setSpeed(v);
+      graphEngine.setSpeed(v);
+      hanoiEngine.setSpeed(v);
+  };
+
+
+  // Master Render switch mapping to correct component
+  const renderVisualizer = () => {
+      if (!activeAlg) return null;
+      switch (activeAlg.category) {
+          case "sorting":
+              return <ArrayVisualizer array={arrayEngine.visualArray} mode="bar" />;
+          case "searching":
+              return <ArrayVisualizer array={arrayEngine.visualArray} mode="card" />;
+          case "graph":
+              return <GraphVisualizer graphData={romaniaGraph} state={graphEngine.graphState} />;
+          case "recursion":
+              return <HanoiVisualizer state={hanoiEngine.hanoiState} totalDisks={hanoiEngine.numDisks} />;
+          default:
+              return null;
+      }
+  };
+
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden border-r border-surface1 last:border-r-0">
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        
-        {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden relative">
-          
-          {/* Header Controls (Algorithm Select) */}
-          <div className="flex flex-wrap items-center gap-4 bg-surface0 p-3 rounded-2xl border border-surface1 z-10">
-            <select
-              value={engine.algorithm?.id || ""}
-              onChange={(e) => {
-                const alg = algorithms.find((a) => a.id === e.target.value);
-                if (alg) engine.setAlgorithm(alg);
-              }}
-              className="bg-crust border border-surface1 text-text rounded-lg px-4 py-2 outline-none focus:border-mauve transition-colors font-medium appearance-none cursor-pointer pr-10 min-w-[200px]"
-              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a6adc8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 1rem center" }}
-            >
-              <option value="" disabled>Select Algorithm...</option>
-              {algorithms.map((alg) => (
-                <option key={alg.id} value={alg.id}>
-                  {alg.name}
-                </option>
-              ))}
-            </select>
-            
-            <div className="flex-1" />
-            
-            {/* Playback Status indicator */}
-            <div className="px-3 py-1 rounded-full bg-crust border border-surface1 text-xs font-mono font-medium text-subtext0 flex items-center gap-2">
-              <div className={
-                "w-2 h-2 rounded-full " +
-                (engine.playbackState === "running" ? "bg-green animate-pulse" :
-                engine.playbackState === "paused" ? "bg-yellow" :
-                engine.playbackState === "completed" ? "bg-mauve" : "bg-surface2")
-              } />
-              {engine.playbackState.toUpperCase()}
-            </div>
-          </div>
-
-          {/* Canvas */}
-          <div className="flex-1 min-h-[300px] overflow-hidden">
-            <Visualizer array={engine.visualArray} />
-          </div>
-
-          {/* Bottom Controls */}
-          <div className="z-10 mt-auto">
-            <Controls
-              playbackState={engine.playbackState}
-              speed={engine.playbackSpeed}
-              size={engine.arraySize}
-              onSpeedChange={engine.setPlaybackSpeed}
-              onSizeChange={engine.setArraySize}
-              onStart={engine.start}
-              onPause={engine.pause}
-              onReset={engine.reset}
-              onShuffle={engine.shuffle}
-              disabled={!engine.algorithm}
-            />
-          </div>
-        </div>
-
-        {/* Technical / Education Sidebar */}
-        <Sidebar algorithm={engine.algorithm} />
-        
-      </div>
-    </div>
+    <MainLayout
+       header={
+           <div>
+               <div className="flex justify-between items-center mb-4">
+                 <h1 className="text-3xl font-extrabold text-text tracking-tight">
+                     Kimchi <span className="text-mauve font-normal">Algorithm Platform</span>
+                 </h1>
+                 <button 
+                   onClick={toggleTheme}
+                   className="p-2 rounded-full hover:bg-surface0 transition-colors text-subtext0 hover:text-text cursor-pointer"
+                   aria-label="Toggle Theme"
+                 >
+                   {theme === "dark" ? "🌙" : "☀️"}
+                 </button>
+               </div>
+           </div>
+       }
+       leftSidebar={
+           <LeftSidebar 
+              algorithms={algorithms}
+              activeCategory={activeCategory}
+              activeAlgorithm={activeAlg}
+              onSelectCategory={setActiveCategory}
+              onSelectAlgorithm={handleSelectAlgorithm}
+           />
+       }
+       controls={
+           <Controls 
+              playbackState={activeState}
+              speed={activeSpeed}
+              onSpeedChange={activeSetSpeed}
+              onStart={handlePlay}
+              onPause={handlePause}
+              onReset={handleReset}
+              disabled={!activeAlg}
+              size={optionalSize}
+              maxSize={optionalMaxSize}
+              onSizeChange={optionalSetSize}
+              onShuffle={optionalShuffle}
+           />
+       }
+       visualizer={renderVisualizer()}
+       sidebar={<Sidebar algorithm={activeAlg} />}
+    />
   );
 }
 
-export function App() {
-  const [isSplitScreen, setIsSplitScreen] = useState(false);
-
+// Wrapper to provide Context
+export default function App() {
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] mt-14">
-      {/* Utility Bar above instances for split screen toggle */}
-      <div className="h-12 border-b border-surface1 flex items-center justify-end px-6 bg-base flex-shrink-0">
-        <label className="flex items-center gap-3 cursor-pointer text-sm font-medium text-subtext0 hover:text-text transition-colors">
-          <input
-            type="checkbox"
-            checked={isSplitScreen}
-            onChange={(e) => setIsSplitScreen(e.target.checked)}
-            className="w-4 h-4 rounded appearance-none border border-surface2 bg-crust checked:bg-mauve checked:border-mauve transition-colors relative after:content-[''] after:absolute after:hidden checked:after:block after:w-1.5 after:h-2.5 after:border-r-2 after:border-b-2 after:border-crust after:left-1/2 after:top-[40%] after:-translate-x-1/2 after:-translate-y-1/2 after:rotate-45"
-          />
-          Split Screen Compare
-        </label>
-      </div>
-
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-base">
-        <VisualizerInstance />
-        
-        {isSplitScreen && (
-          <VisualizerInstance />
-        )}
-      </div>
-    </div>
+    <AppContent />
   );
 }

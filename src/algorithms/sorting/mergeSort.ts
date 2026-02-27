@@ -1,15 +1,17 @@
-import type { AlgorithmDefinition } from "../../types/algorithm";
-import type { Step } from "../../types/steps";
+import type { Algorithm } from "../../types/algorithm";
+import type { ArrayStep } from "../../types/steps";
 
-export const mergeSort: AlgorithmDefinition = {
+export const mergeSort: Algorithm<number[], ArrayStep> = {
   id: "merge-sort",
   name: "Merge Sort",
+  category: "sorting",
+  description: "An efficient, stable, divide-and-conquer sorting algorithm that works by conceptually dividing the unsorted list into n sublists, then repeatedly merging sublists.",
   complexity: {
     time: "O(n log n)",
     space: "O(n)",
   },
-  generateSteps: (array: number[]): Step[] => {
-    const steps: Step[] = [];
+  generateSteps: (array: number[]): ArrayStep[] => {
+    const steps: ArrayStep[] = [];
     const arr = [...array];
 
     function merge(start: number, mid: number, end: number) {
@@ -56,7 +58,7 @@ export const mergeSort: AlgorithmDefinition = {
 
       if (start === 0 && end === array.length - 1) {
          for (let i = 0; i < array.length; i++) {
-           steps.push({type: 'markSorted', index: i});
+           steps.push({type: 'mark_sorted', index: i});
          }
       }
     }

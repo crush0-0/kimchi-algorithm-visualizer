@@ -1,15 +1,17 @@
-import type { AlgorithmDefinition } from "../../types/algorithm";
-import type { Step } from "../../types/steps";
+import type { Algorithm } from "../../types/algorithm";
+import type { ArrayStep } from "../../types/steps";
 
-export const bubbleSort: AlgorithmDefinition = {
+export const bubbleSort: Algorithm<number[], ArrayStep> = {
   id: "bubble-sort",
   name: "Bubble Sort",
+  category: "sorting",
+  description: "A simple sorting algorithm that repeatedly steps through the input list element by element, comparing the current element with the one after it, swapping their values if needed.",
   complexity: {
     time: "O(n²)",
     space: "O(1)",
   },
-  generateSteps: (array: number[]): Step[] => {
-    const steps: Step[] = [];
+  generateSteps: (array: number[]): ArrayStep[] => {
+    const steps: ArrayStep[] = [];
     const arr = [...array];
     const n = arr.length;
 
@@ -25,21 +27,16 @@ export const bubbleSort: AlgorithmDefinition = {
           swapped = true;
         }
       }
-      steps.push({ type: "markSorted", index: n - i - 1 });
+      // Mark the last element of this pass as sorted
+      steps.push({ type: "mark_sorted", index: arr.length - 1 - i });
       if (!swapped) {
         // Mark remaining elements as sorted if the array is already sorted
         for (let k = 0; k < n - i - 1; k++) {
-          steps.push({ type: "markSorted", index: k });
+          steps.push({ type: "mark_sorted", index: k });
         }
         break;
       }
     }
-    
-    // Explicitly mark [0] as sorted if it finished naturally
-    if (n > 0 && steps.findIndex(s => s.type === "markSorted" && s.index === 0) === -1) {
-      steps.push({ type: "markSorted", index: 0 });
-    }
-
     return steps;
   },
   pseudocode: [

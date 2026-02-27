@@ -1,15 +1,17 @@
-import type { AlgorithmDefinition } from "../../types/algorithm";
-import type { Step } from "../../types/steps";
+import type { Algorithm } from "../../types/algorithm";
+import type { ArrayStep } from "../../types/steps";
 
-export const quickSort: AlgorithmDefinition = {
+export const quickSort: Algorithm<number[], ArrayStep> = {
   id: "quick-sort",
   name: "Quick Sort",
+  category: "sorting",
+  description: "A highly efficient, general-purpose sorting algorithm based on memory-efficient divide-and-conquer principles using pivot partitioning.",
   complexity: {
     time: "O(n log n)",
     space: "O(log n)",
   },
-  generateSteps: (array: number[]): Step[] => {
-    const steps: Step[] = [];
+  generateSteps: (array: number[]): ArrayStep[] => {
+    const steps: ArrayStep[] = [];
     const arr = [...array];
 
     function partition(low: number, high: number): number {
@@ -33,7 +35,7 @@ export const quickSort: AlgorithmDefinition = {
       arr[high] = temp;
       
       // The pivot is now in its correct sorted position
-      steps.push({ type: "markSorted", index: i + 1 });
+      steps.push({ type: "mark_sorted", index: i + 1 });
       
       return i + 1;
     }
@@ -45,7 +47,7 @@ export const quickSort: AlgorithmDefinition = {
         sort(pi + 1, high);
       } else if (low === high) {
          // Sub-array of size 1 is inherently sorted
-         steps.push({ type: "markSorted", index: low });
+         steps.push({ type: "mark_sorted", index: low });
       }
     }
 

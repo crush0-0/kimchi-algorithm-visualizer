@@ -1,15 +1,17 @@
-import type { AlgorithmDefinition } from "../../types/algorithm";
-import type { Step } from "../../types/steps";
+import type { Algorithm } from "../../types/algorithm";
+import type { ArrayStep } from "../../types/steps";
 
-export const selectionSort: AlgorithmDefinition = {
+export const selectionSort: Algorithm<number[], ArrayStep> = {
   id: "selection-sort",
   name: "Selection Sort",
+  category: "sorting",
+  description: "An in-place comparison sorting algorithm that divides the input list into two parts: a sorted sublist of items which is built up from left to right at the front (left) of the list and a sublist of the remaining unsorted items.",
   complexity: {
     time: "O(n²)",
     space: "O(1)",
   },
-  generateSteps: (array: number[]): Step[] => {
-    const steps: Step[] = [];
+  generateSteps: (array: number[]): ArrayStep[] => {
+    const steps: ArrayStep[] = [];
     const arr = [...array];
     const n = arr.length;
 
@@ -28,7 +30,7 @@ export const selectionSort: AlgorithmDefinition = {
         arr[i] = arr[minIdx];
         arr[minIdx] = temp;
       }
-      steps.push({ type: "markSorted", index: i });
+      steps.push({ type: "mark_sorted", index: i });
     }
 
     return steps;
